@@ -1,5 +1,7 @@
 package org.burrow_studios.shelly;
 
+import org.burrow_studios.shelly.util.logging.LogUtil;
+
 import java.io.File;
 import java.net.URISyntaxException;
 
@@ -22,7 +24,7 @@ public class Main {
     }
 
     /** JVM entrypoint */
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws Exception {
+        LogUtil.init();
     }
 }
