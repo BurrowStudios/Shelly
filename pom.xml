@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.burrow-studios</groupId>
+    <artifactId>Shelly</artifactId>
+    <version>1.0.0</version>
+
+    <name>Shelly</name>
+    <description>Burrow Studios authentication &amp; authorization service</description>
+    <url>https://github.com/BurrowStudios/Shelly</url>
+
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Burrow Studios</name>
+        <url>https://github.com/BurrowStudios</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>TurtleException</name>
+            <email>dev@turtle-mail.de</email>
+            <url>https://turtleboi.de</url>
+        </developer>
+    </developers>
+
+
+    <scm>
+        <connection>scm:git:git://github.com/BurrowStudios/Shelly.git</connection>
+        <developerConnection>scm:git:ssh://github.com:BurrowStudios/Shelly.git</developerConnection>
+        <url>http://github.com/BurrowStudios/Shelly</url>
+    </scm>
+
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+</project>
