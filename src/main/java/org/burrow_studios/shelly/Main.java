@@ -1,5 +1,6 @@
 package org.burrow_studios.shelly;
 
+import org.burrow_studios.shelly.util.ResourceUtil;
 import org.burrow_studios.shelly.util.logging.LogUtil;
 
 import java.io.File;
@@ -9,6 +10,9 @@ public class Main {
     static {
         System.out.print("Starting Shelly");
     }
+
+    /** Static application version. */
+    public static final String VERSION = ResourceUtil.getVersion();
 
     /** Directory in which the JAR ist located. */
     public static final File DIR;
@@ -25,6 +29,10 @@ public class Main {
 
     /** JVM entrypoint */
     public static void main(String[] args) throws Exception {
+        if (VERSION == null)
+            throw new AssertionError("Unknown version");
+        System.out.printf(" version %s...%n", VERSION);
+
         LogUtil.init();
     }
 }
