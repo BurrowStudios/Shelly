@@ -18,6 +18,8 @@ public class SQLiteDatabase extends SQLDatabase {
     private static final String STMT_ALTER_TABLE_EXP_FAMILIES = "ALTER TABLE `expired_families` ADD FOREIGN KEY (`subject`, `family`) REFERENCES `identities`(`subject`, `token_family`) ON DELETE NO ACTION ON UPDATE RESTRICT;";
     private static final String STMT_ALTER_TABLE_SESSIONS     = "ALTER TABLE `sessions` ADD FOREIGN KEY (`identity`) REFERENCES `identities`(`token_id`) ON DELETE NO ACTION ON UPDATE RESTRICT;";
 
+    private static final String STMT_INSERT_SESSION = "INSERT INTO `sessions` (`id`, `identity`, `token`) VALUES (?, ?, ?)";
+
     private static final Logger LOG = Logger.getLogger(SQLiteDatabase.class.getSimpleName());
 
     private final Connection connection;
@@ -49,6 +51,17 @@ public class SQLiteDatabase extends SQLDatabase {
             alterSessions.execute();
         } catch (SQLException e) {
             throw new RuntimeException("Could not create tables", e);
+        }
+    }
+
+    @Override
+    public void createSession0(long id, long identity, String token) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(STMT_INSERT_SESSION)) {
+            stmt.setLong(1, id);
+            stmt.setLong(2, identity);
+            stmt.setString(3, token);
+
+            stmt.execute();
         }
     }
 }
