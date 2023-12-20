@@ -1,6 +1,6 @@
 package org.burrow_studios.shelly.database.sqlite;
 
-import org.burrow_studios.shelly.database.Database;
+import org.burrow_studios.shelly.database.SQLDatabase;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SQLiteDatabase implements Database {
+public class SQLiteDatabase extends SQLDatabase {
     private static final String STMT_CREATE_TABLE_IDENTITIES   = "CREATE TABLE IF NOT EXISTS `identities` (`subject` BIGINT(20) NOT NULL, `token_family` INT NOT NULL, `token_id` BIGINT(20) NOT NULL, PRIMARY KEY (`token_id`), INDEX (`subject`, `token_family`));";
     private static final String STMT_CREATE_TABLE_EXP_FAMILIES = "CREATE TABLE IF NOT EXISTS `expired_families` (`subject` BIGINT(20) NOT NULL, `family` INT NOT NULL, PRIMARY KEY (`subject`, `family`));";
     private static final String STMT_CREATE_TABLE_SESSIONS     = "CREATE TABLE IF NOT EXISTS `sessions` (`id` BIGINT(20) NOT NULL, `identity` BIGINT(20) NOT NULL, `token` TEXT NOT NULL, PRIMARY KEY (`id`), UNIQUE (`token`));"; // TODO: don't store token?
