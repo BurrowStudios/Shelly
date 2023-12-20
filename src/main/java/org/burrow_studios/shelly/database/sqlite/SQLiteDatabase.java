@@ -3,10 +3,8 @@ package org.burrow_studios.shelly.database.sqlite;
 import org.burrow_studios.shelly.database.SQLDatabase;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +15,8 @@ public class SQLiteDatabase extends SQLDatabase {
 
     private static final String STMT_ALTER_TABLE_EXP_FAMILIES = "ALTER TABLE `expired_families` ADD FOREIGN KEY (`subject`, `family`) REFERENCES `identities`(`subject`, `token_family`) ON DELETE NO ACTION ON UPDATE RESTRICT;";
     private static final String STMT_ALTER_TABLE_SESSIONS     = "ALTER TABLE `sessions` ADD FOREIGN KEY (`identity`) REFERENCES `identities`(`token_id`) ON DELETE NO ACTION ON UPDATE RESTRICT;";
+
+    private static final String STMT_SELECT_SESSIONS = "SELECT * FROM `sessions` WHERE `identity` = ? AND `expired` = 0;";
 
     private static final String STMT_INSERT_SESSION = "INSERT INTO `sessions` (`id`, `identity`, `token`) VALUES (?, ?, ?)";
 
@@ -54,6 +54,24 @@ public class SQLiteDatabase extends SQLDatabase {
             alterSessions.execute();
         } catch (SQLException e) {
             throw new RuntimeException("Could not create tables", e);
+        }
+    }
+
+    @Override
+    protected long[] getActiveSessions0(long identity) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(STMT_SELECT_SESSIONS)) {
+            stmt.setLong(1, identity);
+
+            ResultSet result = stmt.executeQuery();
+
+            ArrayList<Long> sessionIds = new ArrayList<>();
+
+            while (result.next())
+                sessionIds.add(result.getLong("id"));
+
+            return sessionIds.stream()
+                    .mapToLong(Long::longValue)
+                    .toArray();
         }
     }
 
