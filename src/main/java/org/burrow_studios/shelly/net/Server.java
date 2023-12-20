@@ -3,9 +3,11 @@ package org.burrow_studios.shelly.net;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpServer;
 import org.burrow_studios.shelly.Shelly;
 import org.burrow_studios.shelly.net.handlers.NotFoundHandler;
+import org.burrow_studios.shelly.net.handlers.SessionHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -31,6 +33,7 @@ public class Server {
         this.httpServer = HttpServer.create(new InetSocketAddress(8080),  0);
 
         this.httpServer.createContext("/", new NotFoundHandler(this));
+        this.httpServer.createContext("/sessions", new SessionHandler(this));
 
         LOG.log(Level.INFO, "Binding server...");
         this.httpServer.start();
@@ -46,7 +49,7 @@ public class Server {
         return shelly;
     }
 
-    public static JsonElement deserializeJson(String rawJson) {
+    public static JsonElement deserializeJson(String rawJson) throws JsonSyntaxException {
         return GSON.fromJson(rawJson, JsonElement.class);
     }
 
