@@ -36,5 +36,13 @@ public class Main {
         LogUtil.init();
 
         Shelly shelly = new Shelly();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                shelly.stop();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }));
     }
 }

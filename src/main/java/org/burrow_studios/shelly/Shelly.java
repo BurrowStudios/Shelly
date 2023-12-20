@@ -18,4 +18,10 @@ public class Shelly {
     public Server getServer() {
         return server;
     }
+
+    void stop() throws Exception {
+        LOG.log(Level.WARNING, "Shutting down");
+        server.stop();
+        LOG.log(Level.INFO, "OK bye");
+    }
 }
