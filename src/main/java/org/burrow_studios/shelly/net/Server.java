@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.sun.net.httpserver.HttpServer;
 import org.burrow_studios.shelly.Shelly;
+import org.burrow_studios.shelly.net.handlers.NotFoundHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -28,6 +29,8 @@ public class Server {
 
         LOG.log(Level.INFO, "Starting HTTP server on port 8080");
         this.httpServer = HttpServer.create(new InetSocketAddress(8080),  0);
+
+        this.httpServer.createContext("/", new NotFoundHandler(this));
 
         LOG.log(Level.INFO, "Binding server...");
         this.httpServer.start();
