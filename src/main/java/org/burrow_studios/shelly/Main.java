@@ -34,5 +34,7 @@ public class Main {
         System.out.printf(" version %s...%n", VERSION);
 
         LogUtil.init();
+
+        Shelly shelly = new Shelly();
     }
 }
