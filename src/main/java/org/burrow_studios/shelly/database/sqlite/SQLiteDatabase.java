@@ -2,6 +2,7 @@ package org.burrow_studios.shelly.database.sqlite;
 
 import org.burrow_studios.shelly.database.SQLDatabase;
 import org.jetbrains.annotations.NotNull;
+import org.sqlite.SQLiteConfig;
 
 import java.io.File;
 import java.sql.*;
@@ -10,12 +11,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SQLiteDatabase extends SQLDatabase {
-    private static final String STMT_CREATE_TABLE_IDENTITIES   = "CREATE TABLE IF NOT EXISTS `identities` (`subject` BIGINT(20) NOT NULL, `token_family` INT NOT NULL, `token_id` BIGINT(20) NOT NULL, PRIMARY KEY (`token_id`), INDEX (`subject`, `token_family`));";
-    private static final String STMT_CREATE_TABLE_EXP_FAMILIES = "CREATE TABLE IF NOT EXISTS `expired_families` (`subject` BIGINT(20) NOT NULL, `family` INT NOT NULL, PRIMARY KEY (`subject`, `family`));";
-    private static final String STMT_CREATE_TABLE_SESSIONS     = "CREATE TABLE IF NOT EXISTS `sessions` (`id` BIGINT(20) NOT NULL, `identity` BIGINT(20) NOT NULL, `token` TEXT NOT NULL, `expired` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`id`), UNIQUE (`token`));"; // TODO: don't store token?
+    private static final String STMT_CREATE_TABLE_IDENTITIES   = "CREATE TABLE IF NOT EXISTS `identities` (`subject` BIGINT(20) NOT NULL, `token_family` INT NOT NULL, `token_id` BIGINT(20) NOT NULL, PRIMARY KEY (`token_id`));";
+    private static final String STMT_CREATE_TABLE_EXP_FAMILIES = "CREATE TABLE IF NOT EXISTS `expired_families` (`subject` BIGINT(20) NOT NULL, `family` INT NOT NULL, PRIMARY KEY (`subject`, `family`), FOREIGN KEY (`subject`, `family`) REFERENCES `identities`(`subject`, `token_family`));";
+    private static final String STMT_CREATE_TABLE_SESSIONS     = "CREATE TABLE IF NOT EXISTS `sessions` (`id` BIGINT(20) NOT NULL, `identity` BIGINT(20) NOT NULL, `token` TEXT NOT NULL, `expired` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`id`), FOREIGN KEY (`identity`) REFERENCES `identities`(`token_id`), UNIQUE (`token`));"; // TODO: don't store token?
 
-    private static final String STMT_ALTER_TABLE_EXP_FAMILIES = "ALTER TABLE `expired_families` ADD FOREIGN KEY (`subject`, `family`) REFERENCES `identities`(`subject`, `token_family`) ON DELETE NO ACTION ON UPDATE RESTRICT;";
-    private static final String STMT_ALTER_TABLE_SESSIONS     = "ALTER TABLE `sessions` ADD FOREIGN KEY (`identity`) REFERENCES `identities`(`token_id`) ON DELETE NO ACTION ON UPDATE RESTRICT;";
+    private static final String STMT_INDEX_CREATE_IDENTITIES_SUBJECT      = "CREATE INDEX IF NOT EXISTS `subject` ON `identities` (`subject`);";
+    private static final String STMT_INDEX_CREATE_IDENTITIES_TOKEN_FAMILY = "CREATE INDEX IF NOT EXISTS `token_family` ON `identities` (`token_family`);";
 
     private static final String STMT_SELECT_SESSIONS = "SELECT * FROM `sessions` WHERE `identity` = ? AND `expired` = 0;";
 
@@ -31,8 +32,11 @@ public class SQLiteDatabase extends SQLDatabase {
     public SQLiteDatabase(@NotNull File file) throws SQLException {
         String url = String.format("jdbc:sqlite:%s", file.getAbsolutePath());
 
+        SQLiteConfig config = new SQLiteConfig();
+        config.enforceForeignKeys(true);
+
         LOG.log(Level.INFO, "Initiating database connection to " + url);
-        this.connection = DriverManager.getConnection(url);
+        this.connection = DriverManager.getConnection(url, config.toProperties());
 
         this.init();
 
@@ -46,15 +50,16 @@ public class SQLiteDatabase extends SQLDatabase {
             final PreparedStatement createExpFamilies = connection.prepareStatement(STMT_CREATE_TABLE_EXP_FAMILIES);
             final PreparedStatement createSessions    = connection.prepareStatement(STMT_CREATE_TABLE_SESSIONS);
 
-            final PreparedStatement alterExpFamilies = connection.prepareStatement(STMT_ALTER_TABLE_EXP_FAMILIES);
-            final PreparedStatement alterSessions    = connection.prepareStatement(STMT_ALTER_TABLE_SESSIONS);
-
             createIdentities.execute();
             createExpFamilies.execute();
             createSessions.execute();
 
-            alterExpFamilies.execute();
-            alterSessions.execute();
+
+            final PreparedStatement indexIdentitiesSubject     = connection.prepareStatement(STMT_INDEX_CREATE_IDENTITIES_SUBJECT);
+            final PreparedStatement indexIdentitiesTokenFamily = connection.prepareStatement(STMT_INDEX_CREATE_IDENTITIES_TOKEN_FAMILY);
+
+            indexIdentitiesSubject.execute();
+            indexIdentitiesTokenFamily.execute();
         } catch (SQLException e) {
             throw new RuntimeException("Could not create tables", e);
         }
