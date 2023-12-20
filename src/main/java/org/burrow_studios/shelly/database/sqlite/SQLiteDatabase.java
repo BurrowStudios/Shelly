@@ -3,6 +3,7 @@ package org.burrow_studios.shelly.database.sqlite;
 import org.burrow_studios.shelly.database.SQLDatabase;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -27,16 +28,18 @@ public class SQLiteDatabase extends SQLDatabase {
 
     private final Connection connection;
 
-    public SQLiteDatabase(@NotNull String path) throws SQLException {
-        String url = String.format("jdbc:sqlite://%s", path);
+    public SQLiteDatabase(@NotNull File file) throws SQLException {
+        String url = String.format("jdbc:sqlite:%s", file.getAbsolutePath());
 
         LOG.log(Level.INFO, "Initiating database connection to " + url);
         this.connection = DriverManager.getConnection(url);
 
+        this.init();
+
         LOG.log(Level.INFO, "Database is online");
     }
 
-    public void init() {
+    private void init() {
         LOG.log(Level.INFO, "Creating tables");
         try {
             final PreparedStatement createIdentities  = connection.prepareStatement(STMT_CREATE_TABLE_IDENTITIES);
