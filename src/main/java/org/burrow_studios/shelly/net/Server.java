@@ -1,5 +1,8 @@
 package org.burrow_studios.shelly.net;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.sun.net.httpserver.HttpServer;
 import org.burrow_studios.shelly.Shelly;
 import org.jetbrains.annotations.NotNull;
@@ -11,6 +14,11 @@ import java.util.logging.Logger;
 
 public class Server {
     private static final Logger LOG = Logger.getLogger(Server.class.getSimpleName());
+
+    private static final Gson GSON = new GsonBuilder()
+            .setPrettyPrinting()
+            .serializeNulls()
+            .create();
 
     private final Shelly shelly;
     private final HttpServer httpServer;
@@ -33,5 +41,13 @@ public class Server {
 
     public @NotNull Shelly getShelly() {
         return shelly;
+    }
+
+    public static JsonElement deserializeJson(String rawJson) {
+        return GSON.fromJson(rawJson, JsonElement.class);
+    }
+
+    public static String serializeJson(JsonElement json) {
+        return GSON.toJson(json);
     }
 }
