@@ -43,7 +43,7 @@ Requests that a session should be marked as expired.
 Returns `204 Not Content` on success.
 
 ## Logout: Delete all Sessions</br>![http-delete] /sessions/[{subject.id}]()
-> [!WARN]
+> [!WARNING]
 > This will also invalidate all active sessions of this subject.
 
 Requests that **all** sessions should be marked as expired.
