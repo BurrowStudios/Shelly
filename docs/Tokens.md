@@ -17,27 +17,27 @@ be refreshed.
 
 #### Header
 
-| Field | Type    | Description                                                                             |
-|-------|---------|-----------------------------------------------------------------------------------------|
-| typ   | string  | Token type ("JWT")                                                                      |
-| alg   | string  | A hint to what algorithm should be used to verify the token.                            |
-| exp   | numDate | A timestamp that this token must not be used _after_.                                   |
-| ?nbf  | numDate | A timestamp that this token must not be used _before_.                                  |
+| Field | Type    | Description                                                  |
+|-------|---------|--------------------------------------------------------------|
+| typ   | string  | Token type ("JWT")                                           |
+| alg   | string  | A hint to what algorithm should be used to verify the token. |
 
 #### Payload
 
-| Field | Type             | Description                                              |
-|-------|------------------|----------------------------------------------------------|
-| iss   | string           | Token issuer. Typically "Shelly".                        |
-| sub   | turtle           | Token subject. This is the unique id of the application. |
-| jti   | turtle           | Unique id of his identity token.                         |
+| Field | Type    | Description                                              |
+|-------|---------|----------------------------------------------------------|
+| iss   | string  | Token issuer. Typically "Shelly".                        |
+| sub   | turtle  | Token subject. This is the unique id of the application. |
+| exp   | numDate | A timestamp that this token must not be used _after_.    |
+| ?nbf  | numDate | A timestamp that this token must not be used _before_.   |
+| jti   | turtle  | Unique id of his identity token.                         |
 
 ## Session token
 
 A session token is issued to the client on a [login request](resources/Session.md#login-create-new-sessionbr-session)
 after it successfully identified itself and the identity has been verified.
 
-They automatically become invalid once the time provided via the `exp` field is reached and subsequent requests to
+They automatically become invalid once the time provided via the `exp` claim is reached and subsequent requests to
 privileged API endpoints with the expired token will result in a `401 Unauthorized` response. Additionally, the API may
 choose to invalidate a session token manually for security reasons. In that case the client application should request a
 new session by using its identity token.
@@ -46,13 +46,11 @@ new session by using its identity token.
 
 #### Header
 
-| Field | Type    | Description                                                                             |
-|-------|---------|-----------------------------------------------------------------------------------------|
-| typ   | string  | Token type ("JWT")                                                                      |
-| alg   | string  | A hint to what algorithm should be used to verify the token.                            |
-| kid   | turtle  | Unique id of the [identity token](#identity-token) used to generate this session token. |
-| exp   | numDate | A timestamp that this token must not be used _after_.                                   |
-| ?nbf  | numDate | A timestamp that this token must not be used _before_.                                  |
+| Field | Type   | Description                                                                             |
+|-------|--------|-----------------------------------------------------------------------------------------|
+| typ   | string | Token type ("JWT")                                                                      |
+| alg   | string | A hint to what algorithm should be used to verify the token.                            |
+| kid   | turtle | Unique id of the [identity token](#identity-token) used to generate this session token. |
 
 #### Payload
 
@@ -60,6 +58,8 @@ new session by using its identity token.
 |-------|------------------|----------------------------------------------------------|
 | iss   | string           | Token issuer. Typically "Shelly".                        |
 | sub   | turtle           | Token subject. This is the unique id of the application. |
+| exp   | numDate          | A timestamp that this token must not be used _after_.    |
+| ?nbf  | numDate          | A timestamp that this token must not be used _before_.   |
 | jti   | turtle           | Unique id of his session token.                          |
 | aud   | array of strings |                                                          |
 
