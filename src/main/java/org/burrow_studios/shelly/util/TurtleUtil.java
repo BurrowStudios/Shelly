@@ -50,6 +50,14 @@ public final class TurtleUtil {
         return time | SERVICE | inc;
     }
 
+    static long newId(long unixMillis, int service, int increment) {
+        final long time = (unixMillis - EPOCH) << TIMESTAMP_SHIFT;
+        final long serv = (long) service << SERVICE_SHIFT;
+        final long inc  = increment & INCREMENT_MASK;
+
+        return time | serv | inc;
+    }
+
     public static long getTime(long turtle) {
         return (turtle >> TIMESTAMP_SHIFT) + EPOCH;
     }
