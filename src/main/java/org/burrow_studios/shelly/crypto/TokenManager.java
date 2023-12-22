@@ -3,6 +3,7 @@ package org.burrow_studios.shelly.crypto;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import org.burrow_studios.shelly.Shelly;
+import org.burrow_studios.shelly.database.Database;
 import org.burrow_studios.shelly.util.TurtleUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +23,7 @@ public class TokenManager {
         this.keyManager = new KeyManager(this);
     }
 
-    public @NotNull String newIdentityToken(long subject) {
+    public @NotNull String newIdentityToken(long subject, boolean newFamily) {
         final long id = TurtleUtil.newId();
         final Algorithm algorithm;
 
@@ -33,22 +34,35 @@ public class TokenManager {
             throw new RuntimeException("Internal encryption exception");
         }
 
-        return JWT.create()
+        final String token = JWT.create()
                 .withIssuer("Shelly")
                 .withSubject(Long.toString(subject))
                 .withJWTId(Long.toString(id))
                 .sign(algorithm);
+
+        Database database = shelly.getDatabase();
+        if (newFamily)
+            database.invalidateIdentityTokenFamily(subject);
+        database.createIdentity(id, subject);
+
+        return token;
     }
 
     public @NotNull String newSessionToken(long identity, long subject) {
         final long id = TurtleUtil.newId();
         final Algorithm algorithm = keyManager.getCurrentSessionAlgorithm();
 
-        return JWT.create()
+        final String token = JWT.create()
                 .withKeyId(Long.toString(identity))
                 .withIssuer("Shelly")
                 .withSubject(Long.toString(subject))
                 .withJWTId(Long.toString(id))
                 .sign(algorithm);
+
+        Database database = shelly.getDatabase();
+        database.invalidateAllSessions(identity);
+        database.createSession(id, identity, token);
+
+        return token;
     }
 }
