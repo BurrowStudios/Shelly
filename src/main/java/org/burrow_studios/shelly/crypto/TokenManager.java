@@ -1,7 +1,11 @@
 package org.burrow_studios.shelly.crypto;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.InvalidClaimException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.burrow_studios.shelly.Shelly;
 import org.burrow_studios.shelly.database.Database;
 import org.burrow_studios.shelly.util.TurtleUtil;
@@ -64,5 +68,73 @@ public class TokenManager {
         database.createSession(id, identity, token);
 
         return token;
+    }
+
+    public @NotNull DecodedJWT decodeIdentityToken(String token) throws JWTVerificationException {
+        DecodedJWT decode = JWT.decode(token);
+
+        String idStr = decode.getId();
+        long   id;
+
+        try {
+            id = Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            throw new InvalidClaimException("Invalid token id");
+        }
+
+        long time = TurtleUtil.getTime(id);
+        if (time > System.currentTimeMillis())
+            throw new InvalidClaimException("Invalid token id. Timestamp is from the future.");
+
+        Algorithm algorithm;
+        try {
+            algorithm = keyManager.getPublicIdentityVerificationAlgorithm(id);
+        } catch (Exception e) {
+            throw new JWTVerificationException("Unable to resolve algorithm");
+        }
+
+        JWTVerifier verifier = JWT.require(algorithm)
+                .withIssuer("Shelly")
+                .withClaimPresence("sub")
+                .withClaimPresence("exp")
+                .ignoreIssuedAt()
+                .build();
+
+        Database database = shelly.getDatabase();
+        // TODO: validate db entries
+
+        return verifier.verify(decode);
+    }
+
+    public @NotNull DecodedJWT decodeSessionToken(String token) throws JWTVerificationException {
+        DecodedJWT decode = JWT.decode(token);
+
+        String idStr = decode.getId();
+        long   id;
+
+        try {
+            id = Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            throw new InvalidClaimException("Invalid token id");
+        }
+
+        long time = TurtleUtil.getTime(id);
+        if (time > System.currentTimeMillis())
+            throw new InvalidClaimException("Invalid token id. Timestamp is from the future.");
+
+        Algorithm algorithm = keyManager.getCurrentSessionAlgorithm();
+
+        JWTVerifier verifier = JWT.require(algorithm)
+                .withIssuer("Shelly")
+                .withClaimPresence("sub")
+                .withClaimPresence("exp")
+                .withClaimPresence("aud")
+                .build();
+
+        Database database = shelly.getDatabase();
+        // TODO: validate db entries
+        // TODO: validate key id
+
+        return verifier.verify(decode);
     }
 }
