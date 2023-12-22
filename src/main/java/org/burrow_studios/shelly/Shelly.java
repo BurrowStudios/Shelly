@@ -1,5 +1,6 @@
 package org.burrow_studios.shelly;
 
+import org.burrow_studios.shelly.crypto.TokenManager;
 import org.burrow_studios.shelly.database.Database;
 import org.burrow_studios.shelly.database.sqlite.SQLiteDatabase;
 import org.burrow_studios.shelly.net.Server;
@@ -12,11 +13,15 @@ public class Shelly {
     private static final Logger LOG = Logger.getLogger("MAIN");
 
     private final Database database;
+    private final TokenManager tokenManager;
     private final Server server;
 
     Shelly() throws Exception {
         LOG.log(Level.INFO, "Starting Database");
         this.database = new SQLiteDatabase(new File(Main.DIR, "shelly.db"));
+
+        LOG.log(Level.INFO, "Starting TokenManager");
+        this.tokenManager = new TokenManager(this);
 
         LOG.log(Level.INFO, "Starting API server");
         this.server = new Server(this);
@@ -24,6 +29,10 @@ public class Shelly {
 
     public Database getDatabase() {
         return database;
+    }
+
+    public TokenManager getTokenManager() {
+        return tokenManager;
     }
 
     public Server getServer() {
