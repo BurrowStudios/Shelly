@@ -146,4 +146,8 @@ class KeyManager {
                         .replaceAll("\\s", "")
         );
     }
+
+    public @NotNull Algorithm getCurrentSessionAlgorithm() {
+        return this.sessionAlg;
+    }
 }

@@ -1,7 +1,6 @@
 package org.burrow_studios.shelly.crypto;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import org.burrow_studios.shelly.Shelly;
 import org.burrow_studios.shelly.util.TurtleUtil;
@@ -41,11 +40,15 @@ public class TokenManager {
                 .sign(algorithm);
     }
 
-    public @NotNull String newSessionToken(long id, long identity, long subject) {
-        JWTCreator.Builder builder = JWT.create();
+    public @NotNull String newSessionToken(long identity, long subject) {
+        final long id = TurtleUtil.newId();
+        final Algorithm algorithm = keyManager.getCurrentSessionAlgorithm();
 
-        // TODO
-
-        return "null";
+        return JWT.create()
+                .withKeyId(Long.toString(identity))
+                .withIssuer("Shelly")
+                .withSubject(Long.toString(subject))
+                .withJWTId(Long.toString(id))
+                .sign(algorithm);
     }
 }
