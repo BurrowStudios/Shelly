@@ -5,11 +5,13 @@ import com.auth0.jwt.JWTCreator;
 import org.burrow_studios.shelly.Shelly;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+
 public class TokenManager {
     private final Shelly shelly;
     private final KeyManager keyManager;
 
-    public TokenManager(@NotNull Shelly shelly) {
+    public TokenManager(@NotNull Shelly shelly) throws IOException {
         this.shelly = shelly;
 
         this.keyManager = new KeyManager(this);
