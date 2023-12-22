@@ -46,4 +46,26 @@ public abstract class SQLDatabase implements Database {
     }
 
     protected abstract void invalidateAllSessions0(long identity) throws SQLException;
+
+    @Override
+    public final void invalidateIdentityTokenFamily(long subject) throws DatabaseException {
+        try {
+            this.invalidateIdentityTokenFamily0(subject);
+        } catch (SQLException e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    protected abstract void invalidateIdentityTokenFamily0(long subject) throws SQLException;
+
+    @Override
+    public final void createIdentity(long id, long subject) throws DatabaseException {
+        try {
+            this.createIdentity0(id, subject);
+        } catch (SQLException e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    protected abstract void createIdentity0(long id, long subject) throws SQLException;
 }

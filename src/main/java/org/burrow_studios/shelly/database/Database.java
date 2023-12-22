@@ -8,4 +8,8 @@ public interface Database {
     void invalidateSession(long id, long identity) throws DatabaseException;
 
     void invalidateAllSessions(long identity) throws DatabaseException;
+
+    void invalidateIdentityTokenFamily(long subject) throws DatabaseException;
+
+    void createIdentity(long id, long subject) throws DatabaseException;
 }

@@ -18,9 +18,13 @@ public class SQLiteDatabase extends SQLDatabase {
     private static final String STMT_INDEX_CREATE_IDENTITIES_SUBJECT      = "CREATE INDEX IF NOT EXISTS `subject` ON `identities` (`subject`);";
     private static final String STMT_INDEX_CREATE_IDENTITIES_TOKEN_FAMILY = "CREATE INDEX IF NOT EXISTS `token_family` ON `identities` (`token_family`);";
 
-    private static final String STMT_SELECT_SESSIONS = "SELECT * FROM `sessions` WHERE `identity` = ? AND `expired` = 0;";
+    private static final String STMT_SELECT_SESSIONS   = "SELECT * FROM `sessions` WHERE `identity` = ? AND `expired` = 0;";
+    private static final String STMT_SELECT_FAMILY     = "SELECT `token_family` AS `family` FROM `identities` WHERE `subject` = ? ORDER BY `family` DESC LIMIT 1;";
+    private static final String STMT_SELECT_EXP_FAMILY = "SELECT * FROM `expired_families` WHERE `subject` = ? AND `family` = ?;";
 
-    private static final String STMT_INSERT_SESSION = "INSERT INTO `sessions` (`id`, `identity`, `token`) VALUES (?, ?, ?)";
+    private static final String STMT_INSERT_IDENTITY   = "INSERT INTO `identities` (`subject`, `token_family`, `token_id`) VALUES (?, ?, ?);";
+    private static final String STMT_INSERT_EXP_FAMILY = "INSERT OR IGNORE INTO `expired_families` (`subject`, `family`) VALUES (?, ?);";
+    private static final String STMT_INSERT_SESSION    = "INSERT INTO `sessions` (`id`, `identity`, `token`) VALUES (?, ?, ?);";
 
     private static final String STMT_UPDATE_SESSION_EXPIRE     = "UPDATE `sessions` SET `expired` = 1 WHERE `id` = ? AND `identity` = ?;";
     private static final String STMT_UPDATE_SESSION_EXPIRE_ALL = "UPDATE `sessions` SET `expired` = 1 WHERE `identity` = ?;";
@@ -111,5 +115,53 @@ public class SQLiteDatabase extends SQLDatabase {
 
             stmt.execute();
         }
+    }
+
+    @Override
+    protected void invalidateIdentityTokenFamily0(long subject) throws SQLException {
+        final int family = getCurrentFamily(subject, false);
+
+        try (PreparedStatement stmt = connection.prepareStatement(STMT_INSERT_EXP_FAMILY)) {
+            stmt.setLong(1, subject);
+            stmt.setInt(2, family);
+
+            stmt.execute();
+        }
+    }
+
+    @Override
+    protected void createIdentity0(long id, long subject) throws SQLException {
+        final int family = getCurrentFamily(subject, true);
+
+        try (PreparedStatement stmt = connection.prepareStatement(STMT_INSERT_IDENTITY)) {
+            stmt.setLong(1, subject);
+            stmt.setInt(2, family);
+            stmt.setLong(3, id);
+
+            stmt.execute();
+        }
+    }
+
+    private int getCurrentFamily(long subject, boolean createNew) throws SQLException {
+        int family = 0;
+
+        try (PreparedStatement stmt = connection.prepareStatement(STMT_SELECT_FAMILY)) {
+            stmt.setLong(1, subject);
+
+            ResultSet result = stmt.executeQuery();
+
+            if (result.next())
+                family = result.getInt("family");
+        }
+
+        // check if family is expired
+        try (PreparedStatement stmt = connection.prepareStatement(STMT_SELECT_EXP_FAMILY)) {
+            ResultSet result = stmt.executeQuery();
+
+            if (result.next() && createNew)
+                family++;
+        }
+
+        return family;
     }
 }
